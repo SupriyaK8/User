@@ -44,48 +44,30 @@ public class BuyerController {
 	WishlistRepository wishlistRepo;
 
 	
-@PostMapping(value = "/buyer/register")
-	public String buyerregistration(@RequestBody BuyerDTO buyerDTO) {
-		ResponseEntity<String> responseEntity = null;
 
+	@PostMapping(value="buyer/register",  consumes = MediaType.APPLICATION_JSON_VALUE)
+	public String registerUser(@RequestBody BuyerDTO buyerDTO) {
 		try {
-			
-			logger.info("Buyer Registration is being done by "+buyerDTO.getName());
-			buyerDTO.setIsActive(true);
-			buyerDTO.setIsPrivileged(false);
-			buyerDTO.setRewardPoints(0);
-			buyerService.buyerRegistration(buyerDTO);
-			String successMessage = environment.getProperty("BuyerRegistration.REGISTRATION_SUCCESS");
-			responseEntity = new ResponseEntity<String>(successMessage, HttpStatus.OK);
-			return "successfull";
-
-		} catch (Exception exception) {
-			return "Unsuccessfull";
+		logger.info("Registration request for buyer {}", buyerDTO);
+		buyerDTO.setIsActive(true);
+		buyerDTO.setIsPrivileged(false);
+		buyerDTO.setRewardPoints(0);
+		buyerService.registerBuyer(buyerDTO);
+		return "Successfull";
+		}catch(Exception e) {
+			return("Not sucessfull");
 		}
-
-	
 	}
 
-	@PostMapping(value = "/buyer/login")
-	public String buyerLogin(@RequestBody Buyer buyer) {
-
-		ResponseEntity<String> responseEntity = null;
-
+	@PostMapping(value = "buyer/login",consumes = MediaType.APPLICATION_JSON_VALUE)
+	public String loginBuyer(@RequestBody BuyerDTO buyerDTO) throws Exception {
 		try {
-			
-			
-			buyerService.buyerLogin(buyer);
-			String successMessage = environment.getProperty("BuyerLogin.LOGIN_SUCCESS");
-			responseEntity = new ResponseEntity<String>(successMessage, HttpStatus.OK);
-			return "successfull";
-
-		} catch (Exception exception) {
-			return "Invalid credentials..PLease try again";
+			buyerService.buyerLogin(buyerDTO);
+			return "Login Successfull";
+		} catch (Exception e) {
+			return " Login unsuccessfull, check your credentials and try again";
 		}
-
-		
 	}
-	
 
 
 	@PostMapping(value = "buyer/deactivate",consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -120,27 +102,16 @@ public class BuyerController {
 		return buyerService.IsPrivileged(buyerId);
 	}
 	
-	
-	@PostMapping(value = "/buyer/products/wishlist",consumes = MediaType.APPLICATION_JSON_VALUE)
-	public String addProducttoWishlist(@RequestBody WishlistDTO wishlistDTO) throws Exception {
-		try {
-			buyerService.addProducttowishlist(wishlistDTO);
-			return "prod added";
-		} catch (Exception e) {
-			return "Product not added";
-		}
-		
+	@PostMapping(value = "buyer/products/wishlist/{buyerId}",consumes = MediaType.APPLICATION_JSON_VALUE)
+	public void addProducttoWishlist(@PathVariable Integer buyerId,@RequestBody ProductDTO productDTO) {
+		productDTO= new RestTemplate().getForObject("http://localhost:9001/products"+productDTO.getProdId(),ProductDTO.class);
+		buyerService.addProductTowishlist(productDTO);
 	}
 	
-	@PostMapping(value = "/buyer/products/cart",consumes = MediaType.APPLICATION_JSON_VALUE)
-	public String addProducttoCart(@RequestBody CartDTO cartDTO) {
-		try {
-			buyerService.addProducttoCart(cartDTO);
-			return "prod added";
-		} catch (Exception e) {
-			return "Product not added";
-		}
-		
+	@PostMapping(value = "buyer/products/cart/{buyerId}",consumes = MediaType.APPLICATION_JSON_VALUE)
+	public void addProducttoCart(@PathVariable Integer buyerId,@RequestBody ProductDTO productDTO) {
+		productDTO= new RestTemplate().getForObject("http://localhost:9001/products"+productDTO.getProdId(),ProductDTO.class);
+		buyerService.addProductToCart(productDTO);
 	}
 	
 	@DeleteMapping(value = "buyer/cart/remove/{prodId}",consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -171,6 +142,3 @@ public class BuyerController {
 	
 
 }
-
-
-
