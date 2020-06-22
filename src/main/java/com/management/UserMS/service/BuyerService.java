@@ -4,17 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import javax.naming.InvalidNameException;
-import javax.validation.Validator;
 
-import org.omg.CORBA.UserException;
+
 import org.slf4j.Logger;
 
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+
+
 import com.management.UserMS.dto.BuyerDTO;
 import com.management.UserMS.dto.CartDTO;
+
 import com.management.UserMS.dto.ProductDTO;
 import com.management.UserMS.dto.WishlistDTO;
 import com.management.UserMS.entity.Buyer;
@@ -39,33 +41,19 @@ public class BuyerService {
 
 	
 	
-	public void buyerRegistration(BuyerDTO buyerDTO) throws Exception {
-		logger.info("Buyer details are going to validate");
-		buyerValidation(buyerDTO);
-		logger.info("Buyer details are validated successfully");
-		Buyer buyerEntity = new Buyer();
-		BeanUtils.copyProperties(buyerDTO, buyerEntity);
-		buyerRepo.save(buyerEntity);
-		logger.info("Buyer details are saved in DB successfully");
+	public String registerBuyer(BuyerDTO buyerDTO)throws Exception  {
 		
-	}
-	
-	public void buyerLogin(Buyer buyer) throws Exception {
-
-		Buyer buyerEntity = buyerRepo.findByEmail(buyer.getEmail());
-		if (buyerEntity != null) {
-			if (buyerEntity.getPassword().equals(buyer.getPassword())) {
-				
-			}  else {
-				throw new Exception("sellerLogin.INVALID_PASSWORD");
-			}
-
-		} else {
-			throw new Exception("sellerLogin.INVALID_EMAILID");
+		try {
+		logger.info("Registration request for user {}", buyerDTO);
+		validateBuyer(buyerDTO);
+		Buyer be=buyerDTO.createEntity();
+		buyerRepo.save(be);
+		return("new user created");
+		}catch(Exception e) {
+			throw new Exception(e.getMessage());
 		}
-
 	}
-	private void buyerValidation(BuyerDTO buyerDTO) throws Exception {
+	private void validateBuyer(BuyerDTO buyerDTO) throws Exception {
 
 		logger.info("Buyer details are being validated");
 		// TODO Auto-generated method stub
@@ -106,26 +94,37 @@ public class BuyerService {
 	}
 
 	private boolean isValidPhoneNumber(String phoneNumber) {
-		
+		// TODO Auto-generated method stub
 		return Pattern.matches("^\\d{10}$", phoneNumber);
 	}
 
 	private boolean isValidEmail(String email) {
-		
+		// TODO Auto-generated method stub
 		return Pattern.matches("^[A-Za-z0-9+_.-]+@(.+)$",email);
 	}
 
 	private boolean isValidName(String name) {
-		
+		// TODO Auto-generated method stub
 		return Pattern.matches("^[a-zA-Z]+[-a-zA-Z\\s]+([-a-zA-Z]+)$", name);
 	}
 
 	
 	
 
-	
+	public boolean buyerLogin(BuyerDTO buyerDTO2) throws Exception {
 
-	public void buyerDeactivation(BuyerDTO buyerDTO) throws Exception {
+		Buyer buyer = buyerRepo.findByEmail(buyerDTO2.getEmail());
+		if (buyer != null) {
+			if (buyer.getPassword().equals(buyerDTO2.getPassword())) {
+			return true;
+			} else {
+				throw new Exception("BuyerLogin:Invalid Password");
+			}
+		}
+		return false;
+	}
+
+	public void deactivateBuyer(BuyerDTO buyerDTO) throws Exception {
 
 		Buyer buyer = buyerRepo.findByEmail(buyerDTO.getEmail());
 		if (buyer != null) {
@@ -146,7 +145,7 @@ public class BuyerService {
 		
 	}
 	
-	public void updateRewardPoints(Integer buyerId, Integer point) {
+	public void updateRewardPoint(Integer buyerId, Integer point) {
 		Buyer buyer =buyerRepo.findByBuyerId(buyerId);
 		if (buyer!=null){
 		buyer.setRewardPoints(point);
@@ -156,7 +155,46 @@ public class BuyerService {
 		}
 		
 	}
-
+	public void updateBuyerPrivilege(String email, boolean privilege) throws Exception {
+		Buyer buyer= buyerRepo.findByEmail(email);
+		if(buyer!=null){
+			if(buyer.getIsPrivileged()) {
+				if(!privilege) {
+					buyer.setIsPrivileged(privilege);
+				    buyerRepo.save(buyer);
+					
+				}
+				else {
+				throw new Exception("Buyer is already privileged");
+				}
+			}
+			else if(!(buyer.getIsPrivileged())) {
+				if(privilege) {
+					if(buyer.getRewardPoints()<10000) {
+						throw new Exception("Insufficient Reward Points");
+					}
+					else {
+						buyer.setIsPrivileged(privilege);
+						buyer.setRewardPoints(buyer.getRewardPoints()-10000);
+						buyerRepo.save(buyer);
+					}	
+				}
+				else {
+					
+					throw new Exception("Not Privileged");
+					
+				}
+			}
+		buyer.setIsPrivileged(privilege);
+	    buyerRepo.save(buyer);
+		}
+		else {
+			throw new Exception("Invalid Email");
+		}
+		
+			
+	}
+	
 public boolean IsPrivileged(Integer buyerId) {
 		
 		Buyer buyer= buyerRepo.findByBuyerId(buyerId);
@@ -171,28 +209,29 @@ public boolean IsPrivileged(Integer buyerId) {
 		}
 		
 	}
-	
-	public void addProducttowishlist(WishlistDTO wishlistDTO) {
+	public void addProductTowishlist(ProductDTO productDTO) {
+		// TODO Auto-generated method stub
 		
-		
+		WishlistDTO wishlistDTO =new WishlistDTO();
+		wishlistDTO.setProdId(productDTO.getProdId());
 		Wishlist wishlist =wishlistDTO.createEntity();
 		wishlistRepo.save(wishlist);
 		
 		
 		
 	}
-	public void addProducttoCart(CartDTO cartDTO) {
-	
-
+	public void addProductToCart(ProductDTO productDTO) {
+		// TODO Auto-generated method stub
+		CartDTO cartDTO =new CartDTO();
+		cartDTO.setProdid(productDTO.getProdId());
 		Cart cart =cartDTO.createEntity();
 		cartRepo.save(cart);
 		
 		
 		
 	}
-	
-	public List<WishlistDTO> WishlistItems(Integer buyerId) {
-		
+	public List<WishlistDTO> allWishlistItems(Integer buyerId) {
+		// TODO Auto-generated method stub
 		
 		List<Wishlist> inwishlist= wishlistRepo.findAll();
 		List<WishlistDTO> wishlistDTOs = new ArrayList<>();
@@ -203,9 +242,8 @@ public boolean IsPrivileged(Integer buyerId) {
 		return wishlistDTOs;
 
 	}
-	
-	public List<CartDTO> CartItems(Integer buyerId) {
-	
+	public List<CartDTO> allCartItems(Integer buyerId) {
+		// TODO Auto-generated method stub
 		List<Cart> incart= cartRepo.findAll();
 		List<CartDTO> cartDTOs = new ArrayList<>();
 		for (Cart cart : incart) {
