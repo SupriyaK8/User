@@ -24,32 +24,48 @@ public class SellerController {
 	private SellerService sellerService;
 
 	
-	
-	@PostMapping(value = "seller/register")
-	public String registerSeller(@RequestBody SellerDTO sellerDTO) throws Exception {
+	@PostMapping(value = "/seller/register")
+	public String sellerRegistration(@RequestBody SellerDTO sellerDTO) {
+		ResponseEntity<String> responseEntity = null;
 
 		try {
-			logger.info("Seller Registration is being done by " + sellerDTO.getName());
+			
+			logger.info("seller Registration is being done by "+sellerDTO.getName());
 			sellerDTO.setIsActive(true);
-			sellerService.sellerRegisterion(sellerDTO);
+			
+			sellerService.sellerRegistration(sellerDTO);
+			String successMessage = environment.getProperty("sellerRegistration.REGISTRATION_SUCCESS");
+			responseEntity = new ResponseEntity<String>(successMessage, HttpStatus.OK);
 			return "successfull";
 
 		} catch (Exception exception) {
-			return "Unsuccessfull";
+			return "unsuccessfull";
+		}
 
+	
 	}
+	
+
+	@PostMapping(value = "/seller/login")
+	public String sellerLogin(@RequestBody SellerDTO sellerDTO) {
+
+		ResponseEntity<String> responseEntity = null;
+
+		try {
+			
+			
+			sellerService.sellerLogin(sellerDTO);
+			String successMessage = environment.getProperty("sellerLogin.LOGIN_SUCCESS");
+			responseEntity = new ResponseEntity<String>(successMessage, HttpStatus.OK);
+			return "successfull";
+
+		} catch (Exception exception) {
+			return "Invalid Credentials...Please try again";
+		}
+
 		
 	}
 	
-	@PostMapping(value = "seller/login",consumes = MediaType.APPLICATION_JSON_VALUE)
-	public String loginSeller(@RequestBody SellerDTO sellerDTO){
-		try {
-			sellerService.sellerLogin(sellerDTO);
-			return "Login Successfull";
-		} catch (Exception e) {
-			return " Login unsuccessfull, check your credentials and try again";
-		}
-	}
 	
 	@PostMapping(value = "seller/deactivate",consumes = MediaType.APPLICATION_JSON_VALUE)
 	public String deactivateSeller(@RequestBody SellerDTO sellerDTO){
