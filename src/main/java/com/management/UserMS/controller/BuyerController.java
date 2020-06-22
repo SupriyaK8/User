@@ -44,30 +44,48 @@ public class BuyerController {
 	WishlistRepository wishlistRepo;
 
 	
+@PostMapping(value = "/buyer/register")
+	public String buyerregistration(@RequestBody BuyerDTO buyerDTO) {
+		ResponseEntity<String> responseEntity = null;
 
-	@PostMapping(value="buyer/register",  consumes = MediaType.APPLICATION_JSON_VALUE)
-	public String registerUser(@RequestBody BuyerDTO buyerDTO) {
 		try {
-		logger.info("Registration request for buyer {}", buyerDTO);
-		buyerDTO.setIsActive(true);
-		buyerDTO.setIsPrivileged(false);
-		buyerDTO.setRewardPoints(0);
-		buyerService.registerBuyer(buyerDTO);
-		return "Successfull";
-		}catch(Exception e) {
-			return("Not sucessfull");
+			
+			logger.info("Buyer Registration is being done by "+buyerDTO.getName());
+			buyerDTO.setIsActive(true);
+			buyerDTO.setIsPrivileged(false);
+			buyerDTO.setRewardPoints(0);
+			buyerService.buyerRegistration(buyerDTO);
+			String successMessage = environment.getProperty("BuyerRegistration.REGISTRATION_SUCCESS");
+			responseEntity = new ResponseEntity<String>(successMessage, HttpStatus.OK);
+			return "successfull";
+
+		} catch (Exception exception) {
+			return "Unsuccessfull";
 		}
+
+	
 	}
 
-	@PostMapping(value = "buyer/login",consumes = MediaType.APPLICATION_JSON_VALUE)
-	public String loginBuyer(@RequestBody BuyerDTO buyerDTO) throws Exception {
+	@PostMapping(value = "/buyer/login")
+	public String buyerLogin(@RequestBody Buyer buyer) {
+
+		ResponseEntity<String> responseEntity = null;
+
 		try {
-			buyerService.buyerLogin(buyerDTO);
-			return "Login Successfull";
-		} catch (Exception e) {
-			return " Login unsuccessfull, check your credentials and try again";
+			
+			
+			buyerService.buyerLogin(buyer);
+			String successMessage = environment.getProperty("BuyerLogin.LOGIN_SUCCESS");
+			responseEntity = new ResponseEntity<String>(successMessage, HttpStatus.OK);
+			return "successfull";
+
+		} catch (Exception exception) {
+			return "Invalid credentials..PLease try again";
 		}
+
+		
 	}
+	
 
 
 	@PostMapping(value = "buyer/deactivate",consumes = MediaType.APPLICATION_JSON_VALUE)
