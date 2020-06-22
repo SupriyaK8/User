@@ -4,19 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import javax.naming.InvalidNameException;
+import javax.validation.Validator;
 
-
+import org.omg.CORBA.UserException;
 import org.slf4j.Logger;
 
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-
-
 import com.management.UserMS.dto.BuyerDTO;
 import com.management.UserMS.dto.CartDTO;
-
 import com.management.UserMS.dto.ProductDTO;
 import com.management.UserMS.dto.WishlistDTO;
 import com.management.UserMS.entity.Buyer;
@@ -51,6 +49,7 @@ public class BuyerService {
 		logger.info("Buyer details are saved in DB successfully");
 		
 	}
+	
 	public void buyerLogin(Buyer buyer) throws Exception {
 
 		Buyer buyerEntity = buyerRepo.findByEmail(buyer.getEmail());
@@ -172,6 +171,7 @@ public boolean IsPrivileged(Integer buyerId) {
 		}
 		
 	}
+	
 	public void addProducttowishlist(WishlistDTO wishlistDTO) {
 		
 		
@@ -190,6 +190,7 @@ public boolean IsPrivileged(Integer buyerId) {
 		
 		
 	}
+	
 	public List<WishlistDTO> WishlistItems(Integer buyerId) {
 		
 		
@@ -202,6 +203,7 @@ public boolean IsPrivileged(Integer buyerId) {
 		return wishlistDTOs;
 
 	}
+	
 	public List<CartDTO> CartItems(Integer buyerId) {
 	
 		List<Cart> incart= cartRepo.findAll();
@@ -212,7 +214,5 @@ public boolean IsPrivileged(Integer buyerId) {
 		}
 		return cartDTOs;	
 		
-
 	}
-	
 }
